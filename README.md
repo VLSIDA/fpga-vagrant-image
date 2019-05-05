@@ -7,4 +7,9 @@ cd fpga-vagrant-image
 mkdir data
 4) Run vagrant:
 vagrant up
-
+5) Clone icebreaker (or another project):
+cd /vagrant_data
+git clone https://github.com/icebreaker-fpga/icebreaker-examples
+cd icebreaker_examples/7seg_count
+6) Compile!
+make

@@ -1,4 +1,3 @@
-
 # -*- mode: ruby -*-
 # vi: set ft=ruby :
 
@@ -51,6 +50,7 @@ Vagrant.configure("2") do |config|
   # Example for VirtualBox:
   #
   config.vm.provider "virtualbox" do |vb|
+      vb.name = "fpga"
   #   # Display the VirtualBox GUI when booting the machine
   #   vb.gui = true
   #
@@ -58,6 +58,13 @@ Vagrant.configure("2") do |config|
   #   vb.memory = "1024"
       vb.memory = "8192"
       vb.cpus = "2"
+
+      #vb.customize ["modifyvm", :id, "--usb", "on"]
+      #vb.customize ["modifyvm", :id, "--usbehci", "on"]
+      #vb.customize ["usbfilter", "add", "0",
+      #  "--target", :id,
+      #  "--name", "iCEBreaker",
+      #  "--product", "iCEBreaker V1.0c"]
   end
   #
   # View the documentation for the provider you are using for more
@@ -68,17 +75,22 @@ Vagrant.configure("2") do |config|
   config.ssh.forward_x11 = true
   config.ssh.forward_agent = true
 
+  config.vm.provision "shell", run: "once",inline: <<-SHELL
+    # Enable X11 forwarding
+    echo "X11UseLocalhost no" >> /etc/ssh/sshd_config
+  SHELL
+
   # Enable provisioning with a shell script. Additional provisioners such as
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
-  config.vm.provision "file", source: "~/.screenrc", destination: "/home/vagrant/.screenrc"
+  config.vm.provision "file", run: "once", source: "screenrc", destination: "/home/vagrant/.screenrc"
+  config.vm.provision "file", run: "once", source: "50-lattice-ftdi.rules", destination: "/etc/udev/rules.d/50-lattice-ftdi.rules"
+  config.vm.provision "file", run: "once", source: "53-lattice-ftdi.rules", destination: "/etc/udev/rules.d/53-lattice-ftdi.rules"
+  # General Ubuntu deps
   config.vm.provision "shell", inline: <<-SHELL
     apt-get update
     apt-get --no-install-recommends -y upgrade
 
-    # Enable X11 forwarding
-    echo "X11UseLocalhost no" >> /etc/ssh/sshd_config
-  
     ### Dependencies ###
     # General tools for building etc.
     apt-get install --no-install-recommends -y build-essential git ssh vim gosu
@@ -86,8 +98,6 @@ Vagrant.configure("2") do |config|
     # Use bash instead of dash
     rm /bin/sh && ln -s /bin/bash /bin/sh
     apt-get install --no-install-recommends -y  python3 python3-numpy python3-scipy
-    # Needed by Netgen and Magic
-    #apt-get install --no-install-recommends -y m4 csh  tk tk-dev tcl-dev blt-dev
     # Needed by ngspice
     #apt-get install --no-install-recommends -y libxaw7-dev
     # X11 dev not used
@@ -95,6 +105,8 @@ Vagrant.configure("2") do |config|
     # CAD dependencies
     # Needed by calibre
     #apt-get install --no-install-recommends -y libglu1-mesa-dev freeglut3-dev mesa-common-dev
+    # Needed by 
+    #apt-get install --no-install-recommends -y m4 csh  tk tk-dev tcl-dev blt-dev
     # Needed by virtuoso
     #apt-get install --no-install-recommends -y ksh libc6-i386
     # Needed by Synopsys design compiler
@@ -118,7 +130,9 @@ Vagrant.configure("2") do |config|
     apt-get install -y --no-install-recommends lsb lsb-release lsb-core
     # Interactive tools
     apt-get install -y --no-install-recommends emacs screen gdb
+  SHELL
 
+  config.vm.provision "shell", run: "first", inline: <<-SHELL
     # Icestorm
     cd
     apt-get install -y --no-install-recommends libftdi1 libftdi1-dev pkg-config
@@ -128,26 +142,23 @@ Vagrant.configure("2") do |config|
 
     # Nextpnr
     cd
-    apt-get install -y --no-install-recommends libboost-all-dev cmake qt5-default libeigen3-dev
+    apt-get install -y --no-install-recommends libboost-all-dev cmake qt5-default libeigen3-dev tcl-dev csh \
+	qtscript5-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libqt5opengl5-dev
     git clone https://github.com/YosysHQ/nextpnr
     cd nextpnr 
     cmake -DARCH=ice40 .
     make -j$(nproc)
     make install
-    
+
     # Yosys
     cd
-    apt-get install -y --no-istall-recommends build-essential clang bison flex \
+    apt-get install -y --no-install-recommends build-essential clang bison flex \
 		libreadline-dev gawk tcl-dev libffi-dev git \
 		graphviz xdot pkg-config python3 libboost-system-dev \
 		libboost-python-dev libboost-filesystem-dev
     git clone https://github.com/cliffordwolf/yosys.git
     cd yosys
-    make
-
-    
-
-
-
+    make 
+    make install
   SHELL
 end

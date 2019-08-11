@@ -83,7 +83,7 @@ Vagrant.configure("2") do |config|
   # Enable provisioning with a shell script. Additional provisioners such as
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
-  config.vm.provision "file", run: "once", source: "screenrc", destination: "/home/vagrant/.screenrc"
+  #config.vm.provision "file", run: "once", source: "screenrc", destination: "/home/vagrant/.screenrc"
   config.vm.provision "file", run: "once", source: "50-lattice-ftdi.rules", destination: "/etc/udev/rules.d/50-lattice-ftdi.rules"
   config.vm.provision "file", run: "once", source: "53-lattice-ftdi.rules", destination: "/etc/udev/rules.d/53-lattice-ftdi.rules"
   # General Ubuntu deps
@@ -160,5 +160,20 @@ Vagrant.configure("2") do |config|
     cd yosys
     make 
     make install
-  SHELL
+
+    # STLINK
+    apt-get install -y libusb-1.0-0-dev sdcc
+    git clone https://github.com/texane/stlink
+    cd stlink
+    make release
+    cd build/Release
+    make install
+    ldconfig
+
+    add-apt-repository ppa:team-gcc-arm-embedded/ppa
+    apt-get update
+    apt-get install gcc-arm-embedded
+    #apt-get install gcc-arm-none-eabi 
+
+  SHELL        
 end

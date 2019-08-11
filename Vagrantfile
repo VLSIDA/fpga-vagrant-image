@@ -175,5 +175,5 @@ Vagrant.configure("2") do |config|
     apt-get install gcc-arm-embedded
     #apt-get install gcc-arm-none-eabi 
 
-  SHELL        
+  SHELL
 end

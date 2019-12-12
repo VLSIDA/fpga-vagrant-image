@@ -43,7 +43,10 @@ Vagrant.configure("2") do |config|
   # the path on the host to the actual folder. The second argument is
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
+  # For macos/linux:
   config.vm.synced_folder "data", "/vagrant_data"
+  # For WSL:
+  config.vm.synced_folder "/mnt/c/vagrant/fpga-data", "/vagrant_data"
 
   # Provider-specific configuration so you can fine-tune various
   # backing providers for Vagrant. These expose provider-specific options.
@@ -84,12 +87,14 @@ Vagrant.configure("2") do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
   #config.vm.provision "file", run: "once", source: "screenrc", destination: "/home/vagrant/.screenrc"
-  config.vm.provision "file", run: "once", source: "50-lattice-ftdi.rules", destination: "/etc/udev/rules.d/50-lattice-ftdi.rules"
-  config.vm.provision "file", run: "once", source: "53-lattice-ftdi.rules", destination: "/etc/udev/rules.d/53-lattice-ftdi.rules"
+  #config.vm.provision "file", run: "once", source: "50-lattice-ftdi.rules", destination: "/etc/udev/rules.d/50-lattice-ftdi.rules"
+  #config.vm.provision "file", run: "once", source: "53-lattice-ftdi.rules", destination: "/etc/udev/rules.d/53-lattice-ftdi.rules"
+  #config.vm.provision "file", run: "once", source: "99-fomu.rules", destination: "/etc/udev/rules.d/.rules"
+
   # General Ubuntu deps
   config.vm.provision "shell", inline: <<-SHELL
     apt-get update
-    apt-get --no-install-recommends -y upgrade
+    DEBIAN_FRONTEND=noninteractive apt-get -y -o Dpkg::Options::="--force-confdef" -o Dpkg::Options::="--force-confold" upgrade 
 
     ### Dependencies ###
     # General tools for building etc.
@@ -162,7 +167,7 @@ Vagrant.configure("2") do |config|
     make install
 
     # STLINK
-    apt-get install -y libusb-1.0-0-dev sdcc
+    apt-get install -y --no-install-recommends libusb-1.0-0-dev sdcc
     git clone https://github.com/texane/stlink
     cd stlink
     make release
@@ -172,8 +177,12 @@ Vagrant.configure("2") do |config|
 
     add-apt-repository ppa:team-gcc-arm-embedded/ppa
     apt-get update
-    apt-get install gcc-arm-embedded
-    #apt-get install gcc-arm-none-eabi 
+    apt-get install -y --no-install-recommends gcc-arm-embedded
+    #apt-get install -y --no-install-recommends gcc-arm-none-eabi 
+
+    apt-get install -y --no-install-recommends dfu-utils
+    sudo groupadd plugdev
+    sudo usermod -a -G plugdev vagrant
 
   SHELL
 end

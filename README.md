@@ -1,15 +1,27 @@
 To start:
-1) Install vagrant https://www.vagrantup.com/
-2) Clone this:
+* Install vagrant https://www.vagrantup.com/
+* Clone this:
+```
 git clone  git@github.com:VLSIDA/fpga-vagrant-image.git
 cd fpga-vagrant-image
-3) Create a shared data directory:
+```
+* Create a shared data directory:
+```
 mkdir data
-4) Run vagrant:
+```
+Note, for WSL, you must put this in /mnt/c for shared filesystems. See the Vagrantfile.
+* Run vagrant:
+```
 vagrant up
-5) Clone icebreaker (or another project):
+vagrant ssh
+```
+* Clone icebreaker (or another project):
+```
 cd /vagrant_data
 git clone https://github.com/icebreaker-fpga/icebreaker-examples
 cd icebreaker_examples/7seg_count
-6) Compile!
+```
+* Compile!
+```
 make
+```

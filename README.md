@@ -16,6 +16,10 @@ Note, for WSL, you must put this in /mnt/c for shared filesystems. See the Vagra
 * Run vagrant:
 ```
 vagrant up --provision
+```
+Now, take a break and get outside while it compiles everything.
+* Log in to the image:
+```
 vagrant ssh
 ```
 * Clone the icebreaker examples:
@@ -27,6 +31,7 @@ make
 ```
 * Clone the fomu workshop demo:
 ```
+cd /vagrant_data
 git clone --recurse-submodules https://github.com/im-tomu/fomu-workshop.git
 cd fomu-workshop/verilog-blink
 make FOMU_REV=pvt1

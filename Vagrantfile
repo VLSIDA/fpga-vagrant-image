@@ -171,13 +171,20 @@ Vagrant.configure("2") do |config|
     apt-get install -y --no-install-recommends gcc-arm-embedded
     #apt-get install -y --no-install-recommends gcc-arm-none-eabi 
 
+
+    # RISC-V toolchain (install from source?)
+    cd /tmp
+    wget https://static.dev.sifive.com/dev-tools/riscv64-unknown-elf-gcc-8.2.0-2019.02.0-x86_64-linux-ubuntu14.tar.gz
+    tar xvf riscv64-unknown-elf-gcc-8.2.0-2019.02.0-x86_64-linux-ubuntu14.tar.gz -C /usr/local
+    echo 'export PATH=$PATH:/usr/local/riscv64-unknown-elf-gcc-8.2.0-2019.02.0-x86_64-linux-ubuntu14/bin' >> /home/vagrant/.bashrc
+
+    # Move the USB rules to the correct location
+    mv /tmp/50-lattice-ftdi.rules /etc/udev/rules.d
+    mv /tmp/53-lattice-ftdi.rules /etc/udev/rules.d
+    mv /tmp/99-fomu.rules /etc/udev/rules.d
     apt-get install -y --no-install-recommends dfu-utils
     sudo groupadd plugdev
     sudo usermod -a -G plugdev vagrant
-
-  mv /tmp/50-lattice-ftdi.rules /etc/udev/rules.d
-  mv /tmp/53-lattice-ftdi.rules /etc/udev/rules.d
-  mv /tmp/99-fomu.rules /etc/udev/rules.d
 
   SHELL
 end

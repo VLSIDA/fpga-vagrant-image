@@ -54,20 +54,25 @@ Vagrant.configure("2") do |config|
   #
   config.vm.provider "virtualbox" do |vb|
       vb.name = "fpga"
-  #   # Display the VirtualBox GUI when booting the machine
-  #   vb.gui = true
-  #
-  #   # Customize the amount of memory on the VM:
-  #   vb.memory = "1024"
+      # Display the VirtualBox GUI when booting the machine
+      #   vb.gui = true
+      
+      # Customize the amount of memory on the VM:
       vb.memory = "8192"
       vb.cpus = "2"
 
-      #vb.customize ["modifyvm", :id, "--usb", "on"]
-      #vb.customize ["modifyvm", :id, "--usbehci", "on"]
-      #vb.customize ["usbfilter", "add", "0",
-      #  "--target", :id,
-      #  "--name", "iCEBreaker",
-      #  "--product", "iCEBreaker V1.0c"]
+      # ICEBreaker (these may not be right)
+      vb.customize ["usbfilter", "add", "0",
+                    "--target", :id,
+                    "--name", "iCEBreaker",
+                    "--vendorid", "0403",
+                    "--productid", "6010"]
+      # FOMU
+      vb.customize ["usbfilter", "add", "0",
+                    "--target", :id,
+                    "--name", "FOMU",
+                    "--vendorid", "1209",
+                    "--productid", "5bf0"]
   end
   #
   # View the documentation for the provider you are using for more

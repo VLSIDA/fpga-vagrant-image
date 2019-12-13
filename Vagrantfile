@@ -44,7 +44,7 @@ Vagrant.configure("2") do |config|
   # the path on the guest to mount the folder. And the optional third
   # argument is a set of non-required options.
   # For macos/linux:
-  config.vm.synced_folder "data", "/vagrant_data"
+  #config.vm.synced_folder "data", "/vagrant_data"
   # For WSL:
   config.vm.synced_folder "/mnt/c/vagrant/fpga-data", "/vagrant_data"
 
@@ -87,9 +87,9 @@ Vagrant.configure("2") do |config|
   # Puppet, Chef, Ansible, Salt, and Docker are also available. Please see the
   # documentation for more information about their specific syntax and use.
   #config.vm.provision "file", run: "once", source: "screenrc", destination: "/home/vagrant/.screenrc"
-  #config.vm.provision "file", run: "once", source: "50-lattice-ftdi.rules", destination: "/etc/udev/rules.d/50-lattice-ftdi.rules"
-  #config.vm.provision "file", run: "once", source: "53-lattice-ftdi.rules", destination: "/etc/udev/rules.d/53-lattice-ftdi.rules"
-  #config.vm.provision "file", run: "once", source: "99-fomu.rules", destination: "/etc/udev/rules.d/.rules"
+  config.vm.provision "file", run: "once", source: "50-lattice-ftdi.rules", destination: "/tmp/50-lattice-ftdi.rules"
+  config.vm.provision "file", run: "once", source: "53-lattice-ftdi.rules", destination: "/tmp/53-lattice-ftdi.rules"
+  config.vm.provision "file", run: "once", source: "99-fomu.rules", destination: "/tmp/99-fomu.rules"
 
   # General Ubuntu deps
   config.vm.provision "shell", inline: <<-SHELL
@@ -98,8 +98,9 @@ Vagrant.configure("2") do |config|
 
     ### Dependencies ###
     # General tools for building etc.
-    apt-get install --no-install-recommends -y build-essential git ssh vim gosu
-    apt-get install --no-install-recommends -y autoconf automake libtool bison flex
+    apt-get install --no-install-recommends -y build-essential git ssh vim gosu autoconf automake libtool bison flex wget
+    # Interactive tools
+    apt-get install -y --no-install-recommends emacs screen gdb
     # Use bash instead of dash
     rm /bin/sh && ln -s /bin/bash /bin/sh
     apt-get install --no-install-recommends -y  python3 python3-numpy python3-scipy
@@ -108,20 +109,7 @@ Vagrant.configure("2") do |config|
     # X11 dev not used
     #apt-get install --no-install-recommends -y libx11-dev libcairo2-dev
     # CAD dependencies
-    # Needed by calibre
-    #apt-get install --no-install-recommends -y libglu1-mesa-dev freeglut3-dev mesa-common-dev
-    # Needed by 
-    #apt-get install --no-install-recommends -y m4 csh  tk tk-dev tcl-dev blt-dev
-    # Needed by virtuoso
-    #apt-get install --no-install-recommends -y ksh libc6-i386
-    # Needed by Synopsys design compiler
-    #apt-get install --no-install-recommends -y libjpeg62 libtiff5 libmng2 libpng16-16
-    #ln -s /usr/lib/x86_64-linux-gnu/libtiff.so.5 /usr/lib/x86_64-linux-gnu/libtiff.so.3 
-    #ln -s /usr/lib/x86_64-linux-gnu/libmng.so.2 /usr/lib/x86_64-linux-gnu/libmng.so.1
-    # Needed by Synopsys library compiler 
     apt-get install --no-install-recommends -y libqt5widgets5 libqt5x11extras5 libqt5printsupport5 libqt5xml5 libqt5sql5 libqt5svg5
-    # Needed by ICC/Synopsys
-    apt-get install --no-install-recommends -y wget
     wget -q -O /tmp/libpng12.deb http://mirrors.kernel.org/ubuntu/pool/main/libp/libpng/libpng12-0_1.2.54-1ubuntu1_amd64.deb \
     && dpkg -i /tmp/libpng12.deb \
     && rm /tmp/libpng12.deb
@@ -133,8 +121,6 @@ Vagrant.configure("2") do |config|
     #apt-get install --no-install-recommends -y iputils-ping net-tools lsof wget whois nmap telnet curl dnsutils tcpdump traceroute
     # Needed to run lmstat
     apt-get install -y --no-install-recommends lsb lsb-release lsb-core
-    # Interactive tools
-    apt-get install -y --no-install-recommends emacs screen gdb
   SHELL
 
   config.vm.provision "shell", run: "first", inline: <<-SHELL
@@ -148,7 +134,7 @@ Vagrant.configure("2") do |config|
     # Nextpnr
     cd
     apt-get install -y --no-install-recommends libboost-all-dev cmake qt5-default libeigen3-dev tcl-dev csh \
-	qtscript5-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libqt5opengl5-dev
+        qtscript5-dev libglu1-mesa-dev freeglut3-dev mesa-common-dev libqt5opengl5-dev
     git clone https://github.com/YosysHQ/nextpnr
     cd nextpnr 
     cmake -DARCH=ice40 .
@@ -158,9 +144,9 @@ Vagrant.configure("2") do |config|
     # Yosys
     cd
     apt-get install -y --no-install-recommends build-essential clang bison flex \
-		libreadline-dev gawk tcl-dev libffi-dev git \
-		graphviz xdot pkg-config python3 libboost-system-dev \
-		libboost-python-dev libboost-filesystem-dev
+        	libreadline-dev gawk tcl-dev libffi-dev git \
+        	graphviz xdot pkg-config python3 libboost-system-dev \
+        	libboost-python-dev libboost-filesystem-dev
     git clone https://github.com/cliffordwolf/yosys.git
     cd yosys
     make 
@@ -183,6 +169,10 @@ Vagrant.configure("2") do |config|
     apt-get install -y --no-install-recommends dfu-utils
     sudo groupadd plugdev
     sudo usermod -a -G plugdev vagrant
+
+  mv /tmp/50-lattice-ftdi.rules /etc/udev/rules.d
+  mv /tmp/53-lattice-ftdi.rules /etc/udev/rules.d
+  mv /tmp/99-fomu.rules /etc/udev/rules.d
 
   SHELL
 end
